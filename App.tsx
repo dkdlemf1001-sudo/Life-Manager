@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { APPS } from './constants';
 import { AppId, AppDefinition } from './types';
-import { Menu, X, ChevronRight, LayoutDashboard, Bell, Search, Settings } from 'lucide-react';
+import { Menu, X, ChevronRight, LayoutDashboard, Bell, Search, Settings, Loader2 } from 'lucide-react';
 
-// App Components
-import { CarManager } from './components/CarManager';
-import { FinanceManager } from './components/FinanceManager';
-import { GoalTracker } from './components/GoalTracker';
-import { AIAssistant } from './components/AIAssistant';
-import { SystemSettings } from './components/SystemSettings';
+// Lazy Load App Components for Performance Optimization
+const CarManager = lazy(() => import('./components/CarManager').then(module => ({ default: module.CarManager })));
+const FinanceManager = lazy(() => import('./components/FinanceManager').then(module => ({ default: module.FinanceManager })));
+const GoalTracker = lazy(() => import('./components/GoalTracker').then(module => ({ default: module.GoalTracker })));
+const AIAssistant = lazy(() => import('./components/AIAssistant').then(module => ({ default: module.AIAssistant })));
+const SystemSettings = lazy(() => import('./components/SystemSettings').then(module => ({ default: module.SystemSettings })));
 
 const App: React.FC = () => {
   const [currentApp, setCurrentApp] = useState<AppId>(AppId.HOME);
@@ -44,7 +44,7 @@ const App: React.FC = () => {
   const activeAppDef = APPS.find(a => a.id === currentApp);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100 font-sans flex flex-col md:flex-row overflow-hidden selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100 font-sans flex flex-col md:flex-row overflow-hidden selection:bg-indigo-50 selection:text-white">
       
       {/* Mobile Header */}
       <div className="md:hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur border-b border-gray-200 dark:border-slate-800 p-4 flex justify-between items-center z-50 sticky top-0">
@@ -170,7 +170,18 @@ const App: React.FC = () => {
         {/* Content Scroll Area */}
         <div className="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
            <div className="max-w-6xl mx-auto pb-10">
-              {currentApp && getAppComponent(currentApp)}
+              <Suspense 
+                fallback={
+                  <div className="flex items-center justify-center h-64">
+                    <div className="flex flex-col items-center gap-2">
+                       <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+                       <p className="text-sm text-gray-500">로딩 중...</p>
+                    </div>
+                  </div>
+                }
+              >
+                {currentApp && getAppComponent(currentApp)}
+              </Suspense>
            </div>
         </div>
       </main>
