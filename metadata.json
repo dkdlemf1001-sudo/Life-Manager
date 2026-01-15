@@ -1,0 +1,7 @@
+{
+  "name": "라이프 매니저",
+  "description": "차량 관리, 투자 현황, 목표 달성 및 AI 비서를 포함한 개인 라이프 스타일 관리 대시보드입니다.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
