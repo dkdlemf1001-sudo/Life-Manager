@@ -52,3 +52,13 @@ export interface StockHolding {
   currentPrice: number;
   name: string;
 }
+
+export interface GlobalData {
+  stocks: StockHolding[];
+  carItems: MaintenanceItem[];
+  carRecords: MaintenanceRecord[];
+  carMileage: number;
+  carInfo: { model: string; plate: string };
+  goals: Goal[];
+  lastUpdate: string;
+}

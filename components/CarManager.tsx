@@ -5,7 +5,8 @@ import {
   Calendar, DollarSign, MapPin, ChevronRight, CheckCircle2,
   Droplets, Wind, Disc, Search, Settings, Filter,
   Edit2, Save, X, Trash2, RefreshCcw, Car as CarIcon,
-  AlertCircle, ShieldCheck, Clock, Activity, Zap
+  AlertCircle, ShieldCheck, Clock, Activity, Zap,
+  Tool
 } from 'lucide-react';
 import { MaintenanceItem, MaintenanceRecord } from '../types';
 
@@ -174,32 +175,31 @@ export const CarManager: React.FC = () => {
 
   const getItemHealth = (item: MaintenanceItem) => {
     const driven = Math.max(0, currentMileage - item.lastServiceMileage);
-    const ratio = Math.min(driven / item.intervalKm, 1.2); 
-    const percent = Math.floor(ratio * 100);
+    const ratio = driven / item.intervalKm;
+    const healthPercent = Math.max(0, Math.min(100, Math.floor((1 - ratio) * 100)));
     const remaining = Math.max(0, item.intervalKm - driven);
     
-    let statusLabel = 'Optimal';
-    let colorClass = 'emerald';
+    let statusLabel = '양호';
+    let statusColor = 'emerald';
     let severity = 'low';
 
     if (ratio >= 1.0) {
-      statusLabel = 'Critical';
-      colorClass = 'rose';
+      statusLabel = '긴급 교체';
+      statusColor = 'rose';
       severity = 'high';
     } else if (ratio >= 0.8) {
-      statusLabel = 'Warning';
-      colorClass = 'amber';
+      statusLabel = '점검 필요';
+      statusColor = 'amber';
       severity = 'medium';
     }
 
-    return { driven, percent, remaining, statusLabel, colorClass, severity, ratio };
+    return { driven, healthPercent, remaining, statusLabel, statusColor, severity, ratio };
   };
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-32 animate-in fade-in duration-500">
-      {/* 1. Ultra-Premium Header */}
-      <div className="relative overflow-hidden bg-slate-900 dark:bg-black rounded-[2.5rem] p-8 md:p-12 text-white shadow-2xl border border-white/5">
-        {/* Background Decorative Elements */}
+      {/* 1. Header Card - Glassmorphic Dashboard */}
+      <div className="relative overflow-hidden bg-slate-900 dark:bg-black rounded-[3rem] p-8 md:p-12 text-white shadow-2xl border border-white/5">
         <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] -mr-32 -mt-32"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-600/5 rounded-full blur-[100px] -ml-20 -mb-20"></div>
         
@@ -208,7 +208,7 @@ export const CarManager: React.FC = () => {
             {isEditingCarInfo ? (
                <div className="space-y-4 animate-in zoom-in-95 duration-200 w-full max-w-sm bg-slate-800/40 p-6 rounded-3xl border border-white/10 backdrop-blur-md">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Vehicle Model</label>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">차량 모델</label>
                     <input 
                       type="text" 
                       value={tempModel}
@@ -217,7 +217,7 @@ export const CarManager: React.FC = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">License Plate</label>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">차량 번호</label>
                     <input 
                       type="text" 
                       value={tempNumber}
@@ -226,14 +226,14 @@ export const CarManager: React.FC = () => {
                     />
                   </div>
                   <div className="flex gap-2 pt-2">
-                    <button onClick={saveCarInfo} className="flex-1 bg-white text-black text-xs py-3 rounded-xl font-bold hover:bg-slate-200 transition-all active:scale-95">Save</button>
-                    <button onClick={() => setIsEditingCarInfo(false)} className="flex-1 bg-slate-800 text-white text-xs py-3 rounded-xl font-bold hover:bg-slate-700 transition-all active:scale-95">Cancel</button>
+                    <button onClick={saveCarInfo} className="flex-1 bg-white text-black text-xs py-3 rounded-xl font-bold hover:bg-slate-200 transition-all active:scale-95">저장</button>
+                    <button onClick={() => setIsEditingCarInfo(false)} className="flex-1 bg-slate-800 text-white text-xs py-3 rounded-xl font-bold hover:bg-slate-700 transition-all active:scale-95">취소</button>
                   </div>
                </div>
             ) : (
               <div onClick={() => { setTempModel(carModel); setTempNumber(carNumber); setIsEditingCarInfo(true); }} className="cursor-pointer group">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="bg-blue-600/20 p-2.5 rounded-2xl border border-blue-500/30">
+                  <div className="bg-blue-600/20 p-2.5 rounded-2xl border border-blue-500/30 shadow-inner">
                     <CarIcon className="w-6 h-6 text-blue-400" />
                   </div>
                   <div>
@@ -250,9 +250,9 @@ export const CarManager: React.FC = () => {
 
           <div className="flex items-center gap-12 pt-8 md:pt-0 border-t border-white/5 md:border-none w-full md:w-auto">
              <div className="flex-1 md:flex-none">
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-2">Global Health</p>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-2">통합 차량 컨디션</p>
                 <div className="flex items-center gap-4">
-                  <div className={`relative flex items-center justify-center`}>
+                  <div className="relative flex items-center justify-center">
                     <svg className="w-16 h-16 transform -rotate-90">
                       <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-white/5" />
                       <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="6" fill="transparent" 
@@ -264,14 +264,14 @@ export const CarManager: React.FC = () => {
                   <div>
                     <p className="text-sm font-bold text-white uppercase tracking-tight">Status</p>
                     <p className={`text-[10px] font-bold uppercase tracking-widest ${healthScore > 85 ? 'text-emerald-400' : 'text-amber-400'}`}>
-                      {healthScore > 85 ? 'Perfect' : 'Attention Needed'}
+                      {healthScore > 85 ? '양호' : '주의 요망'}
                     </p>
                   </div>
                 </div>
              </div>
              <div className="w-px h-16 bg-white/10 hidden md:block"></div>
              <div className="flex-1 md:flex-none text-right">
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-2">Odometer</p>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-2">누적 주행거리</p>
                 <div className="flex items-baseline justify-end gap-1.5">
                    <span className="text-5xl font-mono font-bold tracking-tighter tabular-nums">{currentMileage.toLocaleString()}</span>
                    <span className="text-xs font-bold text-slate-500 uppercase">KM</span>
@@ -280,9 +280,9 @@ export const CarManager: React.FC = () => {
           </div>
         </div>
 
-        {/* Quick Odometer Update */}
+        {/* Dynamic Mileage Input Area */}
         <div className="mt-12 group">
-          <div className="relative flex items-center bg-white/5 hover:bg-white/10 rounded-3xl border border-white/5 hover:border-blue-500/30 p-2 pl-6 transition-all duration-300">
+          <div className="relative flex items-center bg-white/5 hover:bg-white/10 rounded-[2rem] border border-white/5 hover:border-blue-500/30 p-2 pl-6 transition-all duration-300">
              <Gauge className="w-6 h-6 text-slate-500 group-hover:text-blue-400 transition-colors" />
              <input 
                 type="number"
@@ -290,21 +290,21 @@ export const CarManager: React.FC = () => {
                 value={currentMileage}
                 onChange={(e) => setCurrentMileage(Number(e.target.value))}
                 className="flex-1 bg-transparent border-none outline-none px-4 py-4 text-xl font-mono font-bold text-white placeholder:text-slate-700"
-                placeholder="Current KM..."
+                placeholder="현재 주행거리를 입력하세요..."
              />
              <div className="hidden sm:flex items-center gap-2 pr-6 text-xs font-bold text-slate-500 uppercase tracking-widest">
-                <Activity className="w-4 h-4 text-blue-500" /> Real-time tracking
+                <Activity className="w-4 h-4 text-blue-500" /> 실시간 동기화 중
              </div>
           </div>
         </div>
       </div>
 
-      {/* 2. Seamless Navigation Tabs */}
+      {/* 2. Navigation Tabs */}
       <div className="sticky top-20 z-40 flex p-1.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-[2rem] border border-slate-200 dark:border-slate-700/50 shadow-xl shadow-black/5">
         {[
-          { id: 'status', label: 'Overview', icon: ShieldCheck },
-          { id: 'log', label: 'Records', icon: History },
-          { id: 'add', label: 'Service', icon: PlusCircle }
+          { id: 'status', label: '상태 대시보드', icon: ShieldCheck },
+          { id: 'log', label: '정비 히스토리', icon: History },
+          { id: 'add', label: '새 기록 등록', icon: PlusCircle }
         ].map((tab) => (
           <button 
             key={tab.id}
@@ -312,8 +312,8 @@ export const CarManager: React.FC = () => {
             className={`
               flex-1 flex items-center justify-center gap-3 py-4 text-xs font-bold rounded-2xl transition-all duration-300
               ${activeTab === tab.id 
-                ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-lg shadow-black/10' 
-                : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
+                ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-lg shadow-black/10 scale-100' 
+                : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 scale-95 opacity-70'
               }
             `}
           >
@@ -323,27 +323,27 @@ export const CarManager: React.FC = () => {
         ))}
       </div>
 
-      {/* 3. Component Views */}
+      {/* 3. Tab Content */}
       <div className="min-h-[500px]">
         {activeTab === 'status' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {items.map(item => {
-               const { percent, remaining, statusLabel, colorClass, severity } = getItemHealth(item);
+               const { healthPercent, remaining, statusLabel, statusColor, severity } = getItemHealth(item);
                const Icon = getIconForItem(item.name);
                
                return (
                  <div key={item.id} className="group relative bg-white dark:bg-slate-800 rounded-[2.5rem] p-7 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-2xl hover:shadow-blue-500/5 transition-all overflow-hidden">
-                   {/* Visual Feedback Line */}
-                   <div className={`absolute top-0 left-0 w-2 h-full bg-${colorClass}-500/10 group-hover:bg-${colorClass}-500/30 transition-all`}></div>
+                   {/* Left Highlight */}
+                   <div className={`absolute top-0 left-0 w-2 h-full bg-${statusColor}-500/20 group-hover:bg-${statusColor}-500/50 transition-all`}></div>
                    
                    <div className="flex justify-between items-start mb-8">
                       <div className="flex items-center gap-5">
-                         <div className={`p-4 rounded-3xl bg-${colorClass}-50 dark:bg-${colorClass}-500/10 border border-${colorClass}-100 dark:border-${colorClass}-500/20 shadow-inner group-hover:scale-110 transition-transform duration-500`}>
-                            <Icon className={`w-8 h-8 text-${colorClass}-600 dark:text-${colorClass}-400`} />
+                         <div className={`p-4 rounded-3xl bg-${statusColor}-50 dark:bg-${statusColor}-500/10 border border-${statusColor}-100 dark:border-${statusColor}-500/20 shadow-inner group-hover:scale-110 transition-transform duration-500`}>
+                            <Icon className={`w-8 h-8 text-${statusColor}-600 dark:text-${statusColor}-400`} />
                          </div>
                          <div>
                             <h3 className="font-bold text-slate-900 dark:text-white text-xl tracking-tight">{item.name}</h3>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Goal: {item.intervalKm.toLocaleString()} KM</p>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">교체 주기: {item.intervalKm.toLocaleString()} KM</p>
                          </div>
                       </div>
                       <div className={`px-4 py-2 rounded-2xl text-[9px] font-black uppercase tracking-[0.15em] shadow-sm border
@@ -357,20 +357,20 @@ export const CarManager: React.FC = () => {
                    <div className="space-y-6">
                       <div className="flex justify-between items-end">
                          <div>
-                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Service Life Remaining</p>
-                           <p className={`text-2xl font-mono font-bold tracking-tighter ${severity === 'high' ? 'text-rose-500' : 'text-slate-800 dark:text-white'}`}>
-                             {remaining > 0 ? `${remaining.toLocaleString()} KM` : `${Math.abs(remaining).toLocaleString()} KM OVERDUE`}
+                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">잔여 수명</p>
+                           <p className={`text-2xl font-mono font-bold tracking-tighter ${severity === 'high' ? 'text-rose-500 animate-pulse' : 'text-slate-800 dark:text-white'}`}>
+                             {remaining > 0 ? `${remaining.toLocaleString()} KM` : `즉시 교체 필요`}
                            </p>
                          </div>
                          <div className="text-right">
-                           <span className="text-sm font-mono font-bold text-slate-500">{percent}%</span>
+                           <span className={`text-sm font-mono font-bold ${severity === 'high' ? 'text-rose-500' : 'text-slate-500'}`}>{healthPercent}%</span>
                          </div>
                       </div>
                       
                       <div className="relative h-3 w-full bg-slate-100 dark:bg-slate-900/50 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700 shadow-inner">
                          <div 
-                           className={`h-full rounded-full transition-all duration-1000 ease-out bg-${colorClass}-500 shadow-[0_0_15px_rgba(var(--tw-color-${colorClass}-500),0.3)]`}
-                           style={{ width: `${Math.min(percent, 100)}%` }}
+                           className={`h-full rounded-full transition-all duration-1000 ease-out bg-${statusColor}-500 shadow-[0_0_15px_rgba(var(--tw-color-${statusColor}-500),0.3)]`}
+                           style={{ width: `${healthPercent}%` }}
                          ></div>
                       </div>
                    </div>
@@ -378,11 +378,11 @@ export const CarManager: React.FC = () => {
                    <div className="mt-8 pt-6 border-t border-slate-50 dark:border-slate-700/50 flex justify-between items-center">
                       <div className="flex items-center gap-6">
                         <div className="flex flex-col">
-                          <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Last Check</span>
+                          <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">최근 점검</span>
                           <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{item.lastServiceDate}</span>
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">At Odometer</span>
+                          <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">점검 거리</span>
                           <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400">{item.lastServiceMileage.toLocaleString()} KM</span>
                         </div>
                       </div>
@@ -397,16 +397,16 @@ export const CarManager: React.FC = () => {
         {activeTab === 'log' && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
              <div className="flex justify-between items-center px-4">
-                <h3 className="font-bold text-2xl dark:text-white tracking-tight">Maintenance Log</h3>
+                <h3 className="font-bold text-2xl dark:text-white tracking-tight">정비 로그 기록</h3>
                 <div className="bg-blue-500/10 text-blue-500 px-4 py-2 rounded-2xl text-[10px] font-bold uppercase tracking-widest border border-blue-500/20">
-                  {records.length} Total Services
+                  총 {records.length}건의 기록
                 </div>
              </div>
              
              {records.length === 0 ? (
                <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] p-24 text-center border border-dashed border-slate-200 dark:border-slate-700">
                   <History className="w-16 h-16 mx-auto mb-6 text-slate-200 dark:text-slate-700" />
-                  <p className="text-lg font-bold text-slate-400">No records found. Start your first service log!</p>
+                  <p className="text-lg font-bold text-slate-400">아직 정비 기록이 없습니다. 첫 기록을 등록해보세요!</p>
                </div>
              ) : (
                <div className="space-y-4">
@@ -419,12 +419,12 @@ export const CarManager: React.FC = () => {
                              </div>
                              <div>
                                 <div className="flex items-center gap-2 mb-1.5">
-                                  <span className="text-[10px] font-black text-white bg-blue-600 px-2.5 py-1 rounded-lg uppercase tracking-widest">{record.date}</span>
+                                  <span className="text-[10px] font-black text-white bg-indigo-600 px-2.5 py-1 rounded-lg uppercase tracking-widest">{record.date}</span>
                                   {record.shopName && <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1.5 uppercase tracking-widest bg-slate-50 dark:bg-slate-900 px-2 py-1 rounded-lg"><MapPin className="w-3 h-3" /> {record.shopName}</span>}
                                 </div>
                                 <h4 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">{record.itemName}</h4>
                                 <div className="flex items-center gap-3 mt-1">
-                                  <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">Odo: {record.mileage.toLocaleString()} KM</span>
+                                  <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">ODO: {record.mileage.toLocaleString()} KM</span>
                                   {record.note && <span className="text-[10px] font-bold text-indigo-500 italic">"{record.note}"</span>}
                                 </div>
                              </div>
@@ -432,7 +432,7 @@ export const CarManager: React.FC = () => {
                           
                           <div className="flex items-center justify-between lg:justify-end gap-12 border-t lg:border-none border-slate-100 dark:border-slate-700/50 pt-6 lg:pt-0">
                              <div className="text-left lg:text-right">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Service Fee</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">정비 비용</p>
                                 <p className="font-mono font-bold text-2xl text-slate-800 dark:text-slate-100">₩{record.cost.toLocaleString()}</p>
                              </div>
                              
@@ -456,12 +456,12 @@ export const CarManager: React.FC = () => {
                   <div className="w-20 h-20 bg-blue-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 text-blue-500">
                     <Zap className="w-10 h-10" />
                   </div>
-                  <h3 className="text-3xl font-bold dark:text-white tracking-tight">{editingRecordId ? 'Update Record' : 'Log New Service'}</h3>
-                  <p className="text-sm text-slate-400 mt-2 font-medium tracking-wide">Enter the details of your vehicle maintenance</p>
+                  <h3 className="text-3xl font-bold dark:text-white tracking-tight">{editingRecordId ? '기록 수정하기' : '신규 정비 기록 등록'}</h3>
+                  <p className="text-sm text-slate-400 mt-2 font-medium tracking-wide">정확한 차량 관리를 위해 정비 상세 내역을 입력해주세요</p>
                 </div>
 
                 <div className="space-y-6">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.25em] ml-2 block">Maintenance Component</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.25em] ml-2 block">정비 항목 선택</label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     {items.map(item => (
                       <button 
@@ -489,20 +489,20 @@ export const CarManager: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                    <div className="space-y-3">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.25em] ml-2 flex items-center gap-2"><Calendar className="w-3.5 h-3.5" /> Date of Service</label>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.25em] ml-2 flex items-center gap-2"><Calendar className="w-3.5 h-3.5" /> 정비 날짜</label>
                       <input type="date" value={serviceDate} onChange={(e) => setServiceDate(e.target.value)} className="w-full px-6 py-5 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-3xl focus:ring-4 focus:ring-blue-500/10 outline-none font-bold text-base dark:text-white transition-all" />
                    </div>
                    <div className="space-y-3">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.25em] ml-2 flex items-center gap-2"><Gauge className="w-3.5 h-3.5" /> Mileage (KM)</label>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.25em] ml-2 flex items-center gap-2"><Gauge className="w-3.5 h-3.5" /> 정비 시 주행거리 (KM)</label>
                       <input type="number" inputMode="numeric" value={serviceMileage} onChange={(e) => setServiceMileage(Number(e.target.value))} className="w-full px-6 py-5 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-3xl focus:ring-4 focus:ring-blue-500/10 outline-none font-bold text-base dark:text-white transition-all" />
                    </div>
                    <div className="space-y-3">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.25em] ml-2 flex items-center gap-2"><DollarSign className="w-3.5 h-3.5" /> Service Cost (KRW)</label>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.25em] ml-2 flex items-center gap-2"><DollarSign className="w-3.5 h-3.5" /> 소요 비용 (KRW)</label>
                       <input type="text" inputMode="numeric" value={serviceCost} onChange={(e) => setServiceCost(e.target.value.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ","))} placeholder="0" className="w-full px-6 py-5 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-3xl focus:ring-4 focus:ring-blue-500/10 outline-none font-bold text-base dark:text-white transition-all" />
                    </div>
                    <div className="space-y-3">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.25em] ml-2 flex items-center gap-2"><MapPin className="w-3.5 h-3.5" /> Service Location</label>
-                      <input type="text" value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder="e.g. Genesis Center" className="w-full px-6 py-5 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-3xl focus:ring-4 focus:ring-blue-500/10 outline-none font-bold text-base dark:text-white transition-all" />
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.25em] ml-2 flex items-center gap-2"><MapPin className="w-3.5 h-3.5" /> 정비소 위치</label>
+                      <input type="text" value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder="예: 제네시스 강남 서비스센터" className="w-full px-6 py-5 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-3xl focus:ring-4 focus:ring-blue-500/10 outline-none font-bold text-base dark:text-white transition-all" />
                    </div>
                 </div>
 
@@ -511,7 +511,7 @@ export const CarManager: React.FC = () => {
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg py-6 rounded-[2rem] shadow-[0_20px_40px_rgba(37,99,235,0.25)] transition-all active:scale-95 flex items-center justify-center gap-4 group"
                 >
                   <Save className="w-6 h-6 group-hover:rotate-12 transition-transform" /> 
-                  {editingRecordId ? 'Update Records' : 'Save Maintenance Log'}
+                  {editingRecordId ? '정비 기록 수정 완료' : '정비 기록 저장하기'}
                 </button>
              </div>
           </div>

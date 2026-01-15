@@ -10,7 +10,7 @@ import {
   TrendingUp, TrendingDown, Plus, Trash2, DollarSign, 
   BarChart3, PieChart as PieIcon, ArrowUpRight, ArrowDownRight,
   PlusCircle, X, Save, RefreshCw, ExternalLink, AlertCircle, Loader2,
-  Clock, Activity
+  Clock, Activity, Edit2
 } from 'lucide-react';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
@@ -35,7 +35,8 @@ export const FinanceManager: React.FC = () => {
     return saved ? JSON.parse(saved) : INITIAL_STOCKS;
   });
 
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingSymbol, setEditingSymbol] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string>(() => localStorage.getItem('LIFEOS_STOCKS_LAST_UPDATE') || 'N/A');
   const [newStock, setNewStock] = useState({ symbol: '', name: '', shares: '', avgPrice: '' });
@@ -135,20 +136,50 @@ export const FinanceManager: React.FC = () => {
   // Aggregate history for the main chart based on totalValue
   const mainChartData = useMemo(() => generateHistory(totalValue), [totalValue]);
 
-  const handleAddStock = () => {
+  const handleSaveStock = () => {
     if (!newStock.symbol || !newStock.shares || !newStock.avgPrice) return;
     
-    const stockToAdd: StockHolding = {
-      symbol: newStock.symbol.toUpperCase(),
-      name: newStock.name || newStock.symbol.toUpperCase(),
-      shares: Number(newStock.shares),
-      avgPrice: Number(newStock.avgPrice),
-      currentPrice: Number(newStock.avgPrice)
-    };
+    if (editingSymbol) {
+      // Edit mode
+      setStocks(prev => prev.map(s => s.symbol === editingSymbol ? {
+        ...s,
+        symbol: newStock.symbol.toUpperCase(),
+        name: newStock.name || newStock.symbol.toUpperCase(),
+        shares: Number(newStock.shares),
+        avgPrice: Number(newStock.avgPrice)
+      } : s));
+    } else {
+      // Add mode
+      const stockToAdd: StockHolding = {
+        symbol: newStock.symbol.toUpperCase(),
+        name: newStock.name || newStock.symbol.toUpperCase(),
+        shares: Number(newStock.shares),
+        avgPrice: Number(newStock.avgPrice),
+        currentPrice: Number(newStock.avgPrice)
+      };
+      setStocks(prev => [...prev, stockToAdd]);
+    }
 
-    setStocks(prev => [...prev, stockToAdd]);
     setNewStock({ symbol: '', name: '', shares: '', avgPrice: '' });
-    setIsAddModalOpen(false);
+    setEditingSymbol(null);
+    setIsModalOpen(false);
+  };
+
+  const openEditModal = (stock: StockHolding) => {
+    setEditingSymbol(stock.symbol);
+    setNewStock({
+      symbol: stock.symbol,
+      name: stock.name,
+      shares: stock.shares.toString(),
+      avgPrice: stock.avgPrice.toString()
+    });
+    setIsModalOpen(true);
+  };
+
+  const openAddModal = () => {
+    setEditingSymbol(null);
+    setNewStock({ symbol: '', name: '', shares: '', avgPrice: '' });
+    setIsModalOpen(true);
   };
 
   const handleDeleteStock = (symbol: string) => {
@@ -209,7 +240,7 @@ export const FinanceManager: React.FC = () => {
                 <span className="text-sm">실시간 시장가 갱신</span>
               </button>
               <button 
-                onClick={() => setIsAddModalOpen(true)}
+                onClick={openAddModal}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-2xl shadow-2xl shadow-indigo-500/20 flex items-center justify-center gap-3 transition-all active:scale-95"
               >
                 <PlusCircle className="w-5 h-5" />
@@ -395,12 +426,20 @@ export const FinanceManager: React.FC = () => {
                       </p>
                     </td>
                     <td className="px-8 py-6 text-right">
-                      <button 
-                        onClick={() => handleDeleteStock(stock.symbol)}
-                        className="p-2.5 text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-all opacity-0 group-hover:opacity-100"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
+                      <div className="flex justify-end gap-2">
+                        <button 
+                          onClick={() => openEditModal(stock)}
+                          className="p-2.5 text-slate-300 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+                        >
+                          <Edit2 className="w-5 h-5" />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteStock(stock.symbol)}
+                          className="p-2.5 text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -410,16 +449,20 @@ export const FinanceManager: React.FC = () => {
         </div>
       </div>
 
-      {/* Add Stock Modal */}
-      {isAddModalOpen && (
+      {/* Asset Modal (Add/Edit) */}
+      {isModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 backdrop-blur-xl bg-slate-950/40 animate-in fade-in duration-300">
            <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[2.5rem] p-10 shadow-3xl border border-white/10 animate-in zoom-in-95 duration-300">
               <div className="flex justify-between items-center mb-8">
                 <div>
-                  <h3 className="text-2xl font-bold dark:text-white tracking-tight">Add New Asset</h3>
-                  <p className="text-sm text-slate-500 mt-1">Include stocks, ETFs, or crypto to your list</p>
+                  <h3 className="text-2xl font-bold dark:text-white tracking-tight">
+                    {editingSymbol ? '보유 주식 수정' : '신규 자산 추가'}
+                  </h3>
+                  <p className="text-sm text-slate-500 mt-1">
+                    {editingSymbol ? `${editingSymbol}의 보유 현황을 수정합니다` : '포트폴리오에 새로운 종목을 추가하세요'}
+                  </p>
                 </div>
-                <button onClick={() => setIsAddModalOpen(false)} className="p-3 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                <button onClick={() => setIsModalOpen(false)} className="p-3 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
                   <X className="w-6 h-6" />
                 </button>
               </div>
@@ -431,14 +474,15 @@ export const FinanceManager: React.FC = () => {
                       type="text"
                       placeholder="e.g. AAPL, BTC-USD, VOO"
                       value={newStock.symbol}
+                      disabled={!!editingSymbol}
                       onChange={e => setNewStock({...newStock, symbol: e.target.value.toUpperCase()})}
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 font-bold dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder:font-normal placeholder:text-slate-400"
+                      className={`w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 font-bold dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder:font-normal placeholder:text-slate-400 ${editingSymbol ? 'opacity-50 cursor-not-allowed' : ''}`}
                     />
                  </div>
                  
                  <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-1 block">Shares Owned</label>
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-1 block">보유 수량 (Shares)</label>
                         <input 
                         type="number"
                         placeholder="0.00"
@@ -448,7 +492,7 @@ export const FinanceManager: React.FC = () => {
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-1 block">Average Cost ($)</label>
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-1 block">평균 단가 (Avg Cost $)</label>
                         <input 
                         type="number"
                         placeholder="0.00"
@@ -460,7 +504,7 @@ export const FinanceManager: React.FC = () => {
                  </div>
                  
                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-1 block">Asset Name (Optional)</label>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-1 block">자산 명칭 (Asset Name)</label>
                     <input 
                       type="text"
                       placeholder="e.g. Apple Inc."
@@ -472,14 +516,14 @@ export const FinanceManager: React.FC = () => {
               </div>
 
               <button 
-                onClick={handleAddStock}
+                onClick={handleSaveStock}
                 className="w-full mt-10 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-5 rounded-[1.5rem] shadow-2xl shadow-indigo-500/20 transition-all active:scale-95 flex items-center justify-center gap-3 text-lg"
               >
-                <Save className="w-5 h-5" /> Confirm and Add to List
+                <Save className="w-5 h-5" /> {editingSymbol ? '변경 사항 저장' : '포트폴리오에 추가'}
               </button>
               
               <p className="text-center text-[10px] text-slate-400 mt-6 font-medium">
-                The current price will be fetched automatically after adding.
+                {editingSymbol ? '수정된 정보는 즉시 자산 가치에 반영됩니다' : '추가 후 실시간 시장가가 자동으로 반영됩니다'}
               </p>
            </div>
         </div>
