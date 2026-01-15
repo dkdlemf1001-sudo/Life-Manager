@@ -44,17 +44,21 @@ const App: React.FC = () => {
   const activeAppDef = APPS.find(a => a.id === currentApp);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100 font-sans flex flex-col md:flex-row overflow-hidden selection:bg-indigo-50 selection:text-white">
+    <div className="flex flex-col md:flex-row min-h-[100dvh] bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100 font-sans selection:bg-indigo-500 selection:text-white overflow-hidden">
       
-      {/* Mobile Header */}
-      <div className="md:hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur border-b border-gray-200 dark:border-slate-800 p-4 flex justify-between items-center z-50 sticky top-0">
+      {/* Mobile Header (Fixed at top) */}
+      <div className="md:hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 p-4 flex justify-between items-center z-[60] sticky top-0 safe-top">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
             <LayoutDashboard className="text-white w-5 h-5" />
           </div>
           <span className="font-bold text-lg text-slate-800 dark:text-white">LifeOS</span>
         </div>
-        <button onClick={() => setIsSidebarOpen(true)} className="p-2 active:bg-gray-100 rounded-lg">
+        <button 
+          onClick={() => setIsSidebarOpen(true)} 
+          className="p-2 active:scale-95 transition-transform rounded-lg"
+          aria-label="Open menu"
+        >
            <Menu className="w-6 h-6 text-slate-700 dark:text-white" />
         </button>
       </div>
@@ -62,7 +66,7 @@ const App: React.FC = () => {
       {/* Sidebar Navigation */}
       <aside 
         className={`
-          fixed md:static inset-y-0 left-0 z-50 w-72 bg-white dark:bg-slate-950 border-r border-gray-200 dark:border-slate-800 transform transition-transform duration-300 ease-in-out shadow-2xl md:shadow-none
+          fixed md:static inset-y-0 left-0 z-[100] w-72 bg-white dark:bg-slate-950 border-r border-gray-200 dark:border-slate-800 transform transition-transform duration-300 ease-in-out shadow-2xl md:shadow-none
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0
         `}
       >
@@ -75,16 +79,16 @@ const App: React.FC = () => {
                 </div>
                 <div>
                    <h1 className="font-bold text-xl tracking-tight text-slate-900 dark:text-white">Life Manager</h1>
-                   <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Personal OS v1.0</p>
+                   <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Personal OS v1.1</p>
                 </div>
              </div>
-             <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-gray-500">
+             <button onClick={() => setIsSidebarOpen(false)} className="md:hidden p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg">
                <X className="w-6 h-6" />
              </button>
           </div>
 
           {/* Navigation Links */}
-          <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto no-scrollbar">
+          <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto no-scrollbar scroll-container">
             <p className="px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3 mt-2">Main Menu</p>
             {APPS.map((app) => (
               <button
@@ -111,15 +115,15 @@ const App: React.FC = () => {
             ))}
           </nav>
 
-          {/* Sidebar Footer / User Profile */}
+          {/* Sidebar Footer */}
           <div className="p-4 border-t border-gray-100 dark:border-slate-900">
             <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-900 transition-colors text-left">
-              <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 font-bold text-sm ring-2 ring-white dark:ring-slate-900 shadow-sm">
+              <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold text-sm ring-2 ring-white dark:ring-slate-900 shadow-sm">
                 ME
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-slate-800 dark:text-white truncate">내 프로필</p>
-                <p className="text-xs text-gray-500 truncate">관리자 설정</p>
+                <p className="text-xs text-gray-500 truncate">관리자 모드</p>
               </div>
               <Settings className="w-4 h-4 text-gray-400" />
             </button>
@@ -130,14 +134,14 @@ const App: React.FC = () => {
       {/* Overlay for mobile sidebar */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-slate-900/20 z-40 md:hidden backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 bg-slate-900/40 z-[90] md:hidden backdrop-blur-sm transition-opacity"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden relative bg-gray-50/50 dark:bg-slate-900">
-        {/* Top Header */}
+      <main className="flex-1 flex flex-col h-[100dvh] overflow-hidden relative bg-gray-50/50 dark:bg-slate-900">
+        {/* Desktop Top Header (Hidden on Mobile) */}
         <header className="hidden md:flex h-20 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 px-8 items-center justify-between z-10 sticky top-0">
            <div>
               <h2 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">{activeAppDef?.name}</h2>
@@ -145,7 +149,6 @@ const App: React.FC = () => {
            </div>
            
            <div className="flex items-center gap-6">
-              {/* Search Bar Placeholder */}
               <div className="relative hidden lg:block">
                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                  <input 
@@ -167,15 +170,15 @@ const App: React.FC = () => {
            </div>
         </header>
 
-        {/* Content Scroll Area */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
-           <div className="max-w-6xl mx-auto pb-10">
+        {/* Content Scroll Area - Critical for Mobile Scrolling */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden scroll-container p-4 md:p-8">
+           <div className="max-w-6xl mx-auto pb-24 md:pb-10">
               <Suspense 
                 fallback={
                   <div className="flex items-center justify-center h-64">
-                    <div className="flex flex-col items-center gap-2">
-                       <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
-                       <p className="text-sm text-gray-500">로딩 중...</p>
+                    <div className="flex flex-col items-center gap-3">
+                       <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
+                       <p className="text-sm font-medium text-gray-500 animate-pulse">데이터를 불러오는 중...</p>
                     </div>
                   </div>
                 }
@@ -191,126 +194,122 @@ const App: React.FC = () => {
 
 // Dashboard Home Component (Summary View)
 const DashboardHome: React.FC<{ onChangeApp: (id: AppId) => void }> = ({ onChangeApp }) => {
-  // Safe icon retrieval
   const FinanceIcon = APPS.find(app => app.id === AppId.FINANCE)?.icon || LayoutDashboard;
   const CarIcon = APPS.find(app => app.id === AppId.CAR)?.icon || LayoutDashboard;
   const GoalIcon = APPS.find(app => app.id === AppId.GOALS)?.icon || LayoutDashboard;
   const AiIcon = APPS.find(app => app.id === AppId.AI_ASSISTANT)?.icon || LayoutDashboard;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
       
       {/* 1. Welcome Card */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-700 rounded-3xl p-10 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden group">
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-700 rounded-3xl p-6 md:p-10 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden group">
          <div className="relative z-10">
-            <h1 className="text-3xl md:text-4xl font-bold mb-3 tracking-tight">안녕하세요, 관리자님! 👋</h1>
-            <p className="text-indigo-100 max-w-xl text-lg leading-relaxed opacity-90">
+            <h1 className="text-2xl md:text-4xl font-bold mb-2 md:mb-3 tracking-tight">안녕하세요, 관리자님! 👋</h1>
+            <p className="text-indigo-100 max-w-xl text-sm md:text-lg leading-relaxed opacity-90">
               오늘도 목표를 향해 나아가고 계시네요.<br className="hidden md:block"/>
               현재 <span className="font-bold text-white underline decoration-white/30 decoration-2 underline-offset-4">차량 정비 1건</span>이 주의 단계입니다.
             </p>
          </div>
-         {/* Abstract Background Shapes */}
          <div className="absolute right-0 top-0 h-full w-2/3 bg-gradient-to-l from-white/10 to-transparent pointer-events-none"></div>
-         <div className="absolute -right-20 -bottom-32 w-80 h-80 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-700"></div>
-         <div className="absolute right-20 -top-20 w-60 h-60 bg-purple-500/30 rounded-full blur-3xl"></div>
+         <div className="absolute -right-20 -bottom-32 w-80 h-80 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-all duration-700"></div>
+         <div className="absolute right-20 -top-20 w-60 h-60 bg-purple-500/20 rounded-full blur-3xl"></div>
       </div>
 
-      {/* 2. Main Widgets Grid (3 Columns) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* 2. Main Widgets Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
          {/* Car Status Widget */}
          <div 
            onClick={() => onChangeApp(AppId.CAR)}
-           className="cursor-pointer bg-white dark:bg-slate-800 p-7 rounded-3xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-gray-100 dark:border-slate-700 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group"
+           className="cursor-pointer bg-white dark:bg-slate-800 p-6 md:p-7 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700 active:scale-[0.98] md:hover:-translate-y-1 md:hover:shadow-xl transition-all duration-300 group"
          >
-            <div className="flex justify-between items-start mb-6">
-              <div className="bg-blue-100 dark:bg-blue-900/30 p-3.5 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+            <div className="flex justify-between items-start mb-4 md:mb-6">
+              <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-2xl group-hover:scale-110 transition-transform duration-300">
                  <CarIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <span className="text-xs font-bold bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 px-2.5 py-1.5 rounded-lg flex items-center gap-1">
-                 <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></span> 1건 주의
+                 <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></span> 주의
               </span>
             </div>
-            <h3 className="font-bold text-gray-600 dark:text-gray-300 text-sm">차량 상태</h3>
-            <p className="text-3xl font-bold text-slate-800 dark:text-white mt-2 tracking-tight">85 <span className="text-lg text-gray-400 font-sans">점</span></p>
-            <p className="text-xs text-gray-400 mt-2">다음 정비: 엔진 오일</p>
+            <h3 className="font-bold text-gray-600 dark:text-gray-300 text-xs md:text-sm uppercase tracking-wider">차량 건강 상태</h3>
+            <p className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white mt-1 md:mt-2 tracking-tight">85 <span className="text-sm md:text-lg text-gray-400 font-sans">점</span></p>
          </div>
 
          {/* Finance Widget */}
          <div 
            onClick={() => onChangeApp(AppId.FINANCE)}
-           className="cursor-pointer bg-white dark:bg-slate-800 p-7 rounded-3xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-gray-100 dark:border-slate-700 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group"
+           className="cursor-pointer bg-white dark:bg-slate-800 p-6 md:p-7 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700 active:scale-[0.98] md:hover:-translate-y-1 md:hover:shadow-xl transition-all duration-300 group"
          >
-            <div className="flex justify-between items-start mb-6">
-              <div className="bg-green-100 dark:bg-green-900/30 p-3.5 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+            <div className="flex justify-between items-start mb-4 md:mb-6">
+              <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-2xl group-hover:scale-110 transition-transform duration-300">
                  <FinanceIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
               <span className="text-xs font-bold bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-300 px-2.5 py-1.5 rounded-lg flex items-center gap-1">
-                 <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span> +4.2%
+                 +4.2%
               </span>
             </div>
-            <h3 className="font-bold text-gray-600 dark:text-gray-300 text-sm">총 자산</h3>
-            <p className="text-3xl font-bold text-slate-800 dark:text-white mt-2 font-mono tracking-tight">$45,230</p>
-            <p className="text-xs text-gray-400 mt-2">전월 대비 $1,820 증가</p>
+            <h3 className="font-bold text-gray-600 dark:text-gray-300 text-xs md:text-sm uppercase tracking-wider">포트폴리오 가치</h3>
+            <p className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white mt-1 md:mt-2 font-mono tracking-tight">$45,230</p>
          </div>
 
          {/* Goals Widget */}
          <div 
            onClick={() => onChangeApp(AppId.GOALS)}
-           className="cursor-pointer bg-white dark:bg-slate-800 p-7 rounded-3xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-gray-100 dark:border-slate-700 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group"
+           className="cursor-pointer bg-white dark:bg-slate-800 p-6 md:p-7 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700 active:scale-[0.98] md:hover:-translate-y-1 md:hover:shadow-xl transition-all duration-300 group"
          >
-            <div className="flex justify-between items-start mb-6">
-              <div className="bg-red-100 dark:bg-red-900/30 p-3.5 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+            <div className="flex justify-between items-start mb-4 md:mb-6">
+              <div className="bg-red-100 dark:bg-red-900/30 p-3 rounded-2xl group-hover:scale-110 transition-transform duration-300">
                  <GoalIcon className="w-6 h-6 text-red-600 dark:text-red-400" />
               </div>
             </div>
-            <h3 className="font-bold text-gray-600 dark:text-gray-300 text-sm">올해 목표</h3>
-            <div className="mt-4 w-full bg-gray-100 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
-               <div className="bg-gradient-to-r from-red-500 to-orange-500 h-full rounded-full" style={{ width: '45%' }}></div>
+            <h3 className="font-bold text-gray-600 dark:text-gray-300 text-xs md:text-sm uppercase tracking-wider">연간 목표 달성</h3>
+            <div className="mt-3 md:mt-4 w-full bg-gray-100 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+               <div className="bg-gradient-to-r from-red-500 to-orange-500 h-full rounded-full transition-all duration-1000" style={{ width: '45%' }}></div>
             </div>
-            <p className="text-xs font-bold text-gray-400 mt-3 text-right">45% 진행중 (3/4 완료)</p>
+            <p className="text-[10px] md:text-xs font-bold text-gray-400 mt-2 text-right">45% 진행 (3/4 완료)</p>
          </div>
       </div>
 
       {/* 3. Recent Activity & AI Help */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-slate-700">
-             <h3 className="text-lg font-bold mb-6 dark:text-white flex items-center gap-2">
-                <Bell className="w-5 h-5 text-indigo-500" /> 최근 알림
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 dark:border-slate-700">
+             <h3 className="text-lg font-bold mb-5 dark:text-white flex items-center gap-2">
+                <Bell className="w-5 h-5 text-indigo-500" /> 알림 내역
              </h3>
-             <div className="space-y-4">
+             <div className="space-y-3">
                 {[
-                  { title: '엔진 오일 교체 시기가 도래했습니다.', time: '2시간 전', type: 'car', icon: CarIcon, color: 'text-blue-500 bg-blue-50' },
+                  { title: '엔진 오일 교체 시기가 되었습니다.', time: '2시간 전', type: 'car', icon: CarIcon, color: 'text-blue-500 bg-blue-50' },
                   { title: '애플(AAPL) 주가가 2% 상승했습니다.', time: '5시간 전', type: 'stock', icon: FinanceIcon, color: 'text-green-500 bg-green-50' },
                 ].map((notif, i) => (
-                   <div key={i} className="flex items-start gap-4 p-4 hover:bg-gray-50 dark:hover:bg-slate-700/50 rounded-2xl transition-colors group cursor-default">
+                   <div key={i} className="flex items-start gap-3 p-3.5 hover:bg-gray-50 dark:hover:bg-slate-700/50 rounded-2xl transition-colors group cursor-pointer border border-transparent hover:border-gray-200 dark:hover:border-slate-600">
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${notif.color} dark:bg-slate-700`}>
                          <notif.icon className="w-5 h-5" />
                       </div>
                       <div className="flex-1">
-                         <p className="font-bold text-gray-800 dark:text-gray-200 group-hover:text-indigo-600 transition-colors">{notif.title}</p>
-                         <p className="text-xs text-gray-400 mt-1 font-medium">{notif.time}</p>
+                         <p className="text-sm font-bold text-gray-800 dark:text-gray-200 group-hover:text-indigo-600 transition-colors">{notif.title}</p>
+                         <p className="text-[11px] text-gray-400 mt-0.5 font-medium">{notif.time}</p>
                       </div>
                    </div>
                 ))}
              </div>
           </div>
           
-          <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/10 dark:to-purple-900/10 rounded-3xl p-8 border border-indigo-100 dark:border-indigo-900/30 flex flex-col justify-center items-center text-center relative overflow-hidden">
+          <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/40 rounded-3xl p-6 md:p-8 border border-indigo-100 dark:border-indigo-900/30 flex flex-col justify-center items-center text-center relative overflow-hidden min-h-[240px]">
              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-200/20 rounded-full blur-3xl"></div>
              
-             <div className="w-20 h-20 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-indigo-200/50 dark:shadow-none relative z-10">
-                <AiIcon className="w-10 h-10 text-purple-600" />
+             <div className="w-16 h-16 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-indigo-200/50 dark:shadow-none relative z-10">
+                <AiIcon className="w-9 h-10 text-purple-600" />
              </div>
-             <h3 className="font-bold text-xl dark:text-white mb-2 relative z-10">무엇이든 물어보세요</h3>
-             <p className="text-sm text-gray-600 dark:text-gray-400 mb-8 leading-relaxed max-w-xs relative z-10">
-               "이번 달 차량 유지비가 얼마나 들었어?"<br/>
-               AI 비서가 내역을 분석해드립니다.
+             <h3 className="font-bold text-lg dark:text-white mb-2 relative z-10">AI 비서에게 질문하기</h3>
+             <p className="text-xs text-gray-600 dark:text-gray-400 mb-6 leading-relaxed max-w-xs relative z-10 opacity-80">
+               "이번 달 소비 패턴을 분석해줘"<br/>
+               AI 비서가 실시간으로 답변해드립니다.
              </p>
              <button 
                onClick={() => onChangeApp(AppId.AI_ASSISTANT)}
-               className="w-full bg-slate-900 dark:bg-white dark:text-slate-900 hover:bg-indigo-600 dark:hover:bg-indigo-50 text-white px-6 py-4 rounded-xl text-sm font-bold transition-all shadow-lg shadow-slate-900/20 relative z-10"
+               className="w-full bg-slate-900 dark:bg-white dark:text-slate-900 hover:bg-indigo-600 dark:hover:bg-indigo-50 text-white px-6 py-4 rounded-xl text-sm font-bold transition-all shadow-lg active:scale-95 relative z-10"
              >
-               AI 비서와 대화하기
+               AI 비서 시작하기
              </button>
           </div>
       </div>
