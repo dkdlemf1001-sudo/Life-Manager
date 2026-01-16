@@ -5,6 +5,8 @@ export enum AppId {
   CAR = 'CAR',
   FINANCE = 'FINANCE',
   GOALS = 'GOALS',
+  IDEAL_TYPE = 'IDEAL_TYPE',
+  GAGEBU = 'GAGEBU',
   AI_ASSISTANT = 'AI_ASSISTANT',
   SETTINGS = 'SETTINGS'
 }
@@ -53,6 +55,34 @@ export interface StockHolding {
   name: string;
 }
 
+export interface ExpenseRecord {
+  id: string;
+  date: string;
+  amount: number;
+  category: string;
+  note: string;
+}
+
+export interface GalleryImage {
+  id: string;
+  url: string;
+  title: string;
+  span?: string; // e.g. 'col-span-2 row-span-2'
+}
+
+export interface Muse {
+  id: string;
+  name: string;      // English Name
+  koreanName: string; // Korean Name
+  group: string;
+  birthDate: string;
+  role: string;
+  description: string;
+  profileImage: string;
+  gallery: GalleryImage[];
+  themeColor: string; // Tailwind color class prefix e.g. 'pink' or hex
+}
+
 export interface GlobalData {
   stocks: StockHolding[];
   carItems: MaintenanceItem[];
@@ -60,5 +90,7 @@ export interface GlobalData {
   carMileage: number;
   carInfo: { model: string; plate: string };
   goals: Goal[];
+  expenses: ExpenseRecord[];
+  muses: Muse[];
   lastUpdate: string;
 }

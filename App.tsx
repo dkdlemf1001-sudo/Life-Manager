@@ -4,7 +4,7 @@ import { AppId } from './types';
 import { db } from './db';
 import { 
   Menu, X, LayoutDashboard, Bell, Search, Settings, 
-  Loader2, Cloud, RefreshCw, Sparkles, Car, TrendingUp, Target, Bot
+  Loader2, Cloud, RefreshCw, Sparkles, Car, TrendingUp, Target, Bot, Heart, CreditCard
 } from 'lucide-react';
 
 // Lazy Load App Components
@@ -13,6 +13,8 @@ const FinanceManager = lazy(() => import('./components/FinanceManager').then(mod
 const GoalTracker = lazy(() => import('./components/GoalTracker').then(module => ({ default: module.GoalTracker })));
 const AIAssistant = lazy(() => import('./components/AIAssistant').then(module => ({ default: module.AIAssistant })));
 const SystemSettings = lazy(() => import('./components/SystemSettings').then(module => ({ default: module.SystemSettings })));
+const IdealTypeGallery = lazy(() => import('./components/IdealTypeGallery').then(module => ({ default: module.IdealTypeGallery })));
+const GagebuManager = lazy(() => import('./components/GagebuManager').then(module => ({ default: module.GagebuManager })));
 
 const SYNC_ID_KEY = 'LIFEOS_SYNC_ID';
 
@@ -93,6 +95,8 @@ const App: React.FC = () => {
       case AppId.CAR: return <CarManager />;
       case AppId.FINANCE: return <FinanceManager />;
       case AppId.GOALS: return <GoalTracker />;
+      case AppId.IDEAL_TYPE: return <IdealTypeGallery />;
+      case AppId.GAGEBU: return <GagebuManager />;
       case AppId.AI_ASSISTANT: return <AIAssistant />;
       case AppId.SETTINGS: return <SystemSettings onSync={handleCloudSync} syncId={syncId} setSyncId={setSyncId} />;
       default: return <div className="p-10 text-center">준비 중입니다.</div>;
@@ -256,6 +260,18 @@ const DashboardHome: React.FC<{ onChangeApp: (id: AppId) => void }> = ({ onChang
             <h3 className="font-bold text-white/60 text-xs md:text-sm uppercase tracking-wider">차량 건강 상태</h3>
             <p className="text-3xl md:text-4xl font-bold text-white mt-2 tracking-tight">85 <span className="text-lg text-white/30 font-sans">점</span></p>
          </div>
+         
+         {/* GAGEBU CARD */}
+         <div onClick={() => onChangeApp(AppId.GAGEBU)} className="cursor-pointer bg-black/40 backdrop-blur-md p-6 md:p-8 rounded-[2rem] border border-white/10 active:scale-[0.98] md:hover:-translate-y-1 md:hover:border-orange-500/50 hover:shadow-2xl hover:shadow-orange-500/10 transition-all duration-300 group">
+            <div className="flex justify-between items-start mb-6">
+              <div className="bg-orange-500/20 p-3.5 rounded-2xl group-hover:scale-110 transition-transform duration-300 border border-orange-500/30"><CreditCard className="w-6 h-6 text-orange-400" /></div>
+            </div>
+            <h3 className="font-bold text-white/60 text-xs md:text-sm uppercase tracking-wider">이번 달 지출</h3>
+            <p className="text-3xl md:text-4xl font-bold text-white mt-2 font-mono tracking-tight">
+              <span className="text-sm text-white/40 align-top mr-1">₩</span>
+              2,450,000
+            </p>
+         </div>
 
          <div onClick={() => onChangeApp(AppId.FINANCE)} className="cursor-pointer bg-black/40 backdrop-blur-md p-6 md:p-8 rounded-[2rem] border border-white/10 active:scale-[0.98] md:hover:-translate-y-1 md:hover:border-green-500/50 hover:shadow-2xl hover:shadow-green-500/10 transition-all duration-300 group">
             <div className="flex justify-between items-start mb-6">
@@ -265,17 +281,30 @@ const DashboardHome: React.FC<{ onChangeApp: (id: AppId) => void }> = ({ onChang
             <h3 className="font-bold text-white/60 text-xs md:text-sm uppercase tracking-wider">포트폴리오 가치</h3>
             <p className="text-3xl md:text-4xl font-bold text-white mt-2 font-mono tracking-tight">$45,230</p>
          </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        <div onClick={() => onChangeApp(AppId.IDEAL_TYPE)} className="cursor-pointer bg-black/40 backdrop-blur-md p-6 md:p-8 rounded-[2rem] border border-white/10 active:scale-[0.98] md:hover:-translate-y-1 md:hover:border-pink-500/50 hover:shadow-2xl hover:shadow-pink-500/10 transition-all duration-300 group">
+          <div className="flex justify-between items-start mb-6">
+            <div className="bg-pink-500/20 p-3.5 rounded-2xl group-hover:scale-110 transition-transform duration-300 border border-pink-500/30"><Heart className="w-6 h-6 text-pink-400" /></div>
+          </div>
+          <h3 className="font-bold text-white/60 text-xs md:text-sm uppercase tracking-wider">Ideal Type Gallery</h3>
+          <div className="mt-2 flex items-center gap-2">
+              <span className="text-3xl font-bold text-white tracking-tight">MY MUSES</span>
+              <span className="text-xs font-medium text-pink-300 bg-pink-500/10 px-2 py-1 rounded-lg">New</span>
+          </div>
+        </div>
 
-         <div onClick={() => onChangeApp(AppId.GOALS)} className="cursor-pointer bg-black/40 backdrop-blur-md p-6 md:p-8 rounded-[2rem] border border-white/10 active:scale-[0.98] md:hover:-translate-y-1 md:hover:border-red-500/50 hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-300 group">
-            <div className="flex justify-between items-start mb-6">
-              <div className="bg-red-500/20 p-3.5 rounded-2xl group-hover:scale-110 transition-transform duration-300 border border-red-500/30"><Target className="w-6 h-6 text-red-400" /></div>
-            </div>
-            <h3 className="font-bold text-white/60 text-xs md:text-sm uppercase tracking-wider">연간 목표 달성</h3>
-            <div className="mt-4 w-full bg-white/10 h-3 rounded-full overflow-hidden">
-               <div className="bg-gradient-to-r from-red-500 to-orange-500 h-full rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(249,115,22,0.5)]" style={{ width: '45%' }}></div>
-            </div>
-            <p className="text-xs font-bold text-white/50 mt-3 text-right">45% 진행 중</p>
-         </div>
+        <div onClick={() => onChangeApp(AppId.GOALS)} className="cursor-pointer bg-black/40 backdrop-blur-md p-6 md:p-8 rounded-[2rem] border border-white/10 active:scale-[0.98] md:hover:-translate-y-1 md:hover:border-red-500/50 hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-300 group">
+          <div className="flex justify-between items-start mb-6">
+            <div className="bg-red-500/20 p-3.5 rounded-2xl group-hover:scale-110 transition-transform duration-300 border border-red-500/30"><Target className="w-6 h-6 text-red-400" /></div>
+          </div>
+          <h3 className="font-bold text-white/60 text-xs md:text-sm uppercase tracking-wider">연간 목표 달성</h3>
+          <div className="mt-4 w-full bg-white/10 h-3 rounded-full overflow-hidden">
+              <div className="bg-gradient-to-r from-red-500 to-orange-500 h-full rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(249,115,22,0.5)]" style={{ width: '45%' }}></div>
+          </div>
+          <p className="text-xs font-bold text-white/50 mt-3 text-right">45% 진행 중</p>
+        </div>
       </div>
 
       {/* Notifications & AI */}
