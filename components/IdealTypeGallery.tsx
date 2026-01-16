@@ -5,7 +5,8 @@ import { Muse } from '../types';
 import { 
   Heart, Sparkles, PlusCircle, X as XIcon, Loader2, 
   Plus, Camera, Trash2, Calendar, ZoomIn, 
-  User, Image as ImageIcon, Info, Instagram, Youtube, Star, Link as LinkIcon
+  User, Image as ImageIcon, Info, Instagram, Youtube, Star, Link as LinkIcon,
+  Edit2, Save
 } from 'lucide-react';
 
 export const IdealTypeGallery: React.FC = () => {
@@ -15,15 +16,18 @@ export const IdealTypeGallery: React.FC = () => {
 
   // Modals & Overlay States
   const [showAddProfileModal, setShowAddProfileModal] = useState(false);
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [showAddPhotoModal, setShowAddPhotoModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
-  // New Muse Profile State
-  const [newProfileName, setNewProfileName] = useState('');
-  const [newProfileGroup, setNewProfileGroup] = useState('');
-  const [newProfileImage, setNewProfileImage] = useState('');
-  const [newProfileType, setNewProfileType] = useState<'Idol' | 'Influencer'>('Idol');
-  const [newProfileColor, setNewProfileColor] = useState('pink');
+  // Muse Profile Form State (used for both add and edit)
+  const [profileForm, setProfileForm] = useState({
+    name: '',
+    group: '',
+    image: '',
+    type: 'Idol' as 'Idol' | 'Influencer',
+    color: 'pink'
+  });
   
   // New Photo State
   const [newPhotoUrl, setNewPhotoUrl] = useState('');
@@ -46,31 +50,60 @@ export const IdealTypeGallery: React.FC = () => {
 
   const activeMuse = useMemo(() => muses.find(m => m.id === activeMuseId), [muses, activeMuseId]);
 
-  const handleAddProfile = async () => {
-     if (!newProfileName) return;
-     const id = newProfileName.toLowerCase().replace(/\s+/g, '') + Date.now();
-     const newMuse: Muse = {
-        id,
-        name: newProfileName.toUpperCase(),
-        koreanName: newProfileName,
-        group: newProfileGroup || (newProfileType === 'Idol' ? 'Solo' : 'Instagram'),
-        birthDate: new Date().toISOString().split('T')[0],
-        role: newProfileType,
-        description: `${newProfileName} 아카이브 공간`,
-        profileImage: newProfileImage || 'https://i.pinimg.com/736x/8a/7a/b1/8a7ab1cc08b17846513364f776269224.jpg',
-        gallery: [],
-        themeColor: newProfileColor
-     };
+  const handleOpenAddModal = () => {
+    setProfileForm({ name: '', group: '', image: '', type: 'Idol', color: 'pink' });
+    setShowAddProfileModal(true);
+  };
+
+  const handleOpenEditModal = () => {
+    if (!activeMuse) return;
+    setProfileForm({
+      name: activeMuse.name,
+      group: activeMuse.group,
+      image: activeMuse.profileImage,
+      type: activeMuse.role as 'Idol' | 'Influencer',
+      color: activeMuse.themeColor
+    });
+    setShowEditProfileModal(true);
+  };
+
+  const handleSaveProfile = async (isEdit: boolean) => {
+     if (!profileForm.name) return;
      
-     const updated = [...muses, newMuse];
-     setMuses(updated);
-     await db.save('muses', newMuse);
-     
-     setShowAddProfileModal(false);
-     setActiveMuseId(id);
-     setNewProfileName('');
-     setNewProfileGroup('');
-     setNewProfileImage('');
+     if (isEdit && activeMuse) {
+        const updatedMuse: Muse = {
+           ...activeMuse,
+           name: profileForm.name.toUpperCase(),
+           koreanName: profileForm.name,
+           group: profileForm.group || (profileForm.type === 'Idol' ? 'Solo' : 'Instagram'),
+           role: profileForm.type,
+           profileImage: profileForm.image || activeMuse.profileImage,
+           themeColor: profileForm.color
+        };
+        const updatedMuses = muses.map(m => m.id === activeMuse.id ? updatedMuse : m);
+        setMuses(updatedMuses);
+        await db.save('muses', updatedMuse);
+        setShowEditProfileModal(false);
+     } else {
+        const id = profileForm.name.toLowerCase().replace(/\s+/g, '') + Date.now();
+        const newMuse: Muse = {
+           id,
+           name: profileForm.name.toUpperCase(),
+           koreanName: profileForm.name,
+           group: profileForm.group || (profileForm.type === 'Idol' ? 'Solo' : 'Instagram'),
+           birthDate: new Date().toISOString().split('T')[0],
+           role: profileForm.type,
+           description: `${profileForm.name} 아카이브 공간`,
+           profileImage: profileForm.image || 'https://i.pinimg.com/736x/8a/7a/b1/8a7ab1cc08b17846513364f776269224.jpg',
+           gallery: [],
+           themeColor: profileForm.color
+        };
+        const updated = [...muses, newMuse];
+        setMuses(updated);
+        await db.save('muses', newMuse);
+        setActiveMuseId(id);
+        setShowAddProfileModal(false);
+     }
   };
 
   const handleAddPhoto = useCallback(async () => {
@@ -91,7 +124,7 @@ export const IdealTypeGallery: React.FC = () => {
      
      const updatedMuses = muses.map(m => m.id === activeMuse.id ? updatedMuse : m);
      setMuses(updatedMuses);
-     await db.save('muses', updatedMuse); // DB에 영구 저장
+     await db.save('muses', updatedMuse);
      
      setNewPhotoUrl('');
      setShowAddPhotoModal(false);
@@ -107,7 +140,7 @@ export const IdealTypeGallery: React.FC = () => {
     };
     
     setMuses(muses.map(m => m.id === activeMuse.id ? updatedMuse : m));
-    await db.save('muses', updatedMuse); // DB 업데이트
+    await db.save('muses', updatedMuse);
   };
 
   const handleDeleteMuse = async (id: string, e: React.MouseEvent) => {
@@ -151,7 +184,7 @@ export const IdealTypeGallery: React.FC = () => {
             </div>
          ))}
          <button 
-            onClick={() => setShowAddProfileModal(true)}
+            onClick={handleOpenAddModal}
             className="shrink-0 w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 text-white/20 hover:text-white transition-all"
          >
             <Plus className="w-5 h-5" />
@@ -190,7 +223,16 @@ export const IdealTypeGallery: React.FC = () => {
                      </div>
                      
                      <div className="space-y-2">
-                        <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-white uppercase italic leading-none">{activeMuse.name}</h1>
+                        <div className="flex items-center justify-center md:justify-start gap-4 group/title">
+                           <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-white uppercase italic leading-none">{activeMuse.name}</h1>
+                           <button 
+                             onClick={handleOpenEditModal}
+                             className="p-3 bg-white/5 hover:bg-white/20 rounded-2xl text-white/30 hover:text-white transition-all active:scale-90"
+                             title="Edit Profile"
+                           >
+                             <Edit2 size={24} />
+                           </button>
+                        </div>
                         <p className="text-lg text-white/40 font-medium italic">"{activeMuse.description}"</p>
                      </div>
                      
@@ -276,24 +318,26 @@ export const IdealTypeGallery: React.FC = () => {
         </div>
       )}
 
-      {/* Create Profile Modal */}
-      {showAddProfileModal && (
+      {/* Profile Modal (Add/Edit) */}
+      {(showAddProfileModal || showEditProfileModal) && (
          <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
             <div className="bg-[#0a0a0a] border border-white/10 p-10 rounded-[3rem] max-w-sm w-full shadow-3xl">
-               <h3 className="text-2xl font-black mb-8 italic text-white uppercase tracking-tighter">New Archive Identity</h3>
+               <h3 className="text-2xl font-black mb-8 italic text-white uppercase tracking-tighter">
+                 {showEditProfileModal ? 'Edit Archive Identity' : 'New Archive Identity'}
+               </h3>
                
                <div className="space-y-6 mb-10">
                   {/* Category Selection */}
                   <div className="flex p-1 bg-white/5 rounded-2xl border border-white/10">
                     <button 
-                      onClick={() => setNewProfileType('Idol')}
-                      className={`flex-1 py-2 text-[11px] font-black uppercase rounded-xl transition-all ${newProfileType === 'Idol' ? 'bg-white text-black' : 'text-white/40'}`}
+                      onClick={() => setProfileForm(prev => ({...prev, type: 'Idol'}))}
+                      className={`flex-1 py-2 text-[11px] font-black uppercase rounded-xl transition-all ${profileForm.type === 'Idol' ? 'bg-white text-black' : 'text-white/40'}`}
                     >
                       Idol
                     </button>
                     <button 
-                      onClick={() => setNewProfileType('Influencer')}
-                      className={`flex-1 py-2 text-[11px] font-black uppercase rounded-xl transition-all ${newProfileType === 'Influencer' ? 'bg-white text-black' : 'text-white/40'}`}
+                      onClick={() => setProfileForm(prev => ({...prev, type: 'Influencer'}))}
+                      className={`flex-1 py-2 text-[11px] font-black uppercase rounded-xl transition-all ${profileForm.type === 'Influencer' ? 'bg-white text-black' : 'text-white/40'}`}
                     >
                       Influencer
                     </button>
@@ -301,32 +345,34 @@ export const IdealTypeGallery: React.FC = () => {
 
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-2">Display Name</label>
-                    <input className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-pink-500 font-bold text-white transition-all" placeholder="Enter Name" value={newProfileName} onChange={e => setNewProfileName(e.target.value)} />
+                    <input className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-pink-500 font-bold text-white transition-all" placeholder="Enter Name" value={profileForm.name} onChange={e => setProfileForm(prev => ({...prev, name: e.target.value}))} />
                   </div>
                   
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-2">{newProfileType === 'Idol' ? 'Group / Label' : 'Platform Link'}</label>
-                    <input className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-pink-500 font-bold text-white transition-all" placeholder={newProfileType === 'Idol' ? 'e.g. ILLIT' : 'e.g. Instagram'} value={newProfileGroup} onChange={e => setNewProfileGroup(e.target.value)} />
+                    <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-2">{profileForm.type === 'Idol' ? 'Group / Label' : 'Platform Link'}</label>
+                    <input className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-pink-500 font-bold text-white transition-all" placeholder={profileForm.type === 'Idol' ? 'e.g. ILLIT' : 'e.g. Instagram'} value={profileForm.group} onChange={e => setProfileForm(prev => ({...prev, group: e.target.value}))} />
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-2">Profile Image URL (Direct)</label>
-                    <input className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-pink-500 font-bold text-white transition-all" placeholder="https://...image.jpg" value={newProfileImage} onChange={e => setNewProfileImage(e.target.value)} />
+                    <input className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-pink-500 font-bold text-white transition-all" placeholder="https://...image.jpg" value={profileForm.image} onChange={e => setProfileForm(prev => ({...prev, image: e.target.value}))} />
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-2">Theme Color</label>
                     <div className="flex gap-2">
                        {['pink', 'blue', 'purple', 'emerald', 'orange'].map(c => (
-                         <button key={c} onClick={() => setNewProfileColor(c)} className={`w-8 h-8 rounded-full bg-${c}-500 border-2 ${newProfileColor === c ? 'border-white scale-110' : 'border-transparent opacity-50'}`}></button>
+                         <button key={c} onClick={() => setProfileForm(prev => ({...prev, color: c}))} className={`w-8 h-8 rounded-full bg-${c}-500 border-2 ${profileForm.color === c ? 'border-white scale-110' : 'border-transparent opacity-50'}`}></button>
                        ))}
                     </div>
                   </div>
                </div>
                
                <div className="flex gap-3">
-                  <button onClick={handleAddProfile} className="flex-1 bg-white text-black font-black py-4 rounded-2xl active:scale-95 transition-all text-xs uppercase">Save Profile</button>
-                  <button onClick={() => setShowAddProfileModal(false)} className="px-6 bg-white/5 font-black py-4 rounded-2xl text-white/40 uppercase text-xs">Cancel</button>
+                  <button onClick={() => handleSaveProfile(showEditProfileModal)} className="flex-1 bg-white text-black font-black py-4 rounded-2xl active:scale-95 transition-all text-xs uppercase flex items-center justify-center gap-2">
+                    <Save size={14}/> {showEditProfileModal ? 'Update' : 'Save'}
+                  </button>
+                  <button onClick={() => {setShowAddProfileModal(false); setShowEditProfileModal(false);}} className="px-6 bg-white/5 font-black py-4 rounded-2xl text-white/40 uppercase text-xs">Cancel</button>
                </div>
             </div>
          </div>
