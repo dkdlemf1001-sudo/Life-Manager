@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import { Send, Bot, User, Loader2, Sparkles, AlertCircle } from 'lucide-react';
@@ -31,14 +32,8 @@ export const AIAssistant: React.FC = () => {
     setLoading(true);
 
     try {
-      const apiKey = process.env.API_KEY || '';
-      if (!apiKey) {
-        setMessages(prev => [...prev, { role: 'model', text: '오류: 환경 변수에 API_KEY가 설정되지 않았습니다.' }]);
-        setLoading(false);
-        return;
-      }
-
-      const ai = new GoogleGenAI({ apiKey });
+      // Initialize with process.env.API_KEY directly as per guidelines
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       
       const systemInstruction = `
         당신은 사용자의 삶을 돕는 지능적이고 공감 능력 있는 AI 비서인 '라이프 매니저'입니다. (애칭은 모카)
@@ -68,6 +63,7 @@ export const AIAssistant: React.FC = () => {
         }
       });
 
+      // Directly use the .text property
       const text = response.text || "죄송합니다. 답변을 생성할 수 없습니다.";
       setMessages(prev => [...prev, { role: 'model', text }]);
     } catch (error) {
