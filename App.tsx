@@ -60,23 +60,39 @@ const App: React.FC = () => {
       const localData = await db.exportAllData();
 
       if (action === 'create') {
-        // 1. 새로운 Cloud Bin 생성
-        const response = await fetch('https://api.npoint.io/', {
+        // 1. 최소한의 데이터로 ID 먼저 발급받기 (용량 초과 에러 방지)
+        const initResponse = await fetch('https://api.npoint.io/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(localData)
+          body: JSON.stringify({ status: 'initialized' })
         });
-        const result = await response.json();
-        if (result.id) {
-          const newId = result.id;
+        
+        if (!initResponse.ok) throw new Error('서버 연결 실패 (HTML 응답)');
+        
+        const contentType = initResponse.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+           throw new Error("서버가 비정상적인 응답(HTML)을 반환했습니다.");
+        }
+
+        const initResult = await initResponse.json();
+        const newId = initResult.id;
+        
+        if (newId) {
           setSyncId(newId);
           localStorage.setItem(SYNC_ID_KEY, newId);
+          
+          // 2. 발급받은 ID에 실제 데이터 즉시 업로드
+          const pushResponse = await fetch(`https://api.npoint.io/${newId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(localData)
+          });
+          if (!pushResponse.ok) throw new Error('ID 생성 후 데이터 업로드 실패');
           setSyncStatus('success');
         } else {
           throw new Error('ID 발급 실패');
         }
       } else if (action === 'push') {
-        // 2. 기존 Cloud Bin에 데이터 덮어쓰기
         const id = targetId || syncId;
         if (!id) throw new Error('ID가 없습니다');
         
@@ -88,7 +104,6 @@ const App: React.FC = () => {
         if (!response.ok) throw new Error('Push 실패');
         setSyncStatus('success');
       } else if (action === 'pull') {
-        // 3. Cloud에서 데이터 가져오기
         const id = targetId || syncId;
         if (!id) throw new Error('ID가 없습니다');
 
@@ -106,8 +121,9 @@ const App: React.FC = () => {
       localStorage.setItem(LAST_SYNC_TIME_KEY, now);
       setTimeout(() => setSyncStatus('idle'), 3000);
     } catch (error) {
-      console.error('Sync Error:', error);
+      console.error('Sync Error Details:', error);
       setSyncStatus('error');
+      // 에러 알림 처리 (Alert 등 추가 가능)
       setTimeout(() => setSyncStatus('idle'), 5000);
     }
   }, [syncId]);
@@ -137,7 +153,7 @@ const App: React.FC = () => {
           <div className="w-9 h-9 bg-gradient-to-tr from-pink-500 to-violet-600 rounded-xl flex items-center justify-center shadow-lg">
             <Sparkles className="text-white w-5 h-5" />
           </div>
-          <span className="font-bold text-lg text-white">LifeOS</span>
+          <span className="font-bold text-lg text-white tracking-tight">LifeOS</span>
         </div>
         <div className="flex items-center gap-2">
           {syncId && (
@@ -165,15 +181,15 @@ const App: React.FC = () => {
              <button onClick={() => setIsSidebarOpen(false)} className="md:hidden p-2 text-white/50"><X className="w-6 h-6" /></button>
           </div>
 
-          <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto no-scrollbar">
+          <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto no-scrollbar scroll-container">
             {APPS.map((app) => (
               <button
                 key={app.id}
                 onClick={() => { setCurrentApp(app.id); setIsSidebarOpen(false); }}
                 className={`w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl transition-all duration-200 group relative ${currentApp === app.id ? 'bg-white/10 text-white shadow-lg border border-white/5' : 'text-white/60 hover:bg-white/5 hover:text-white'}`}
               >
-                {currentApp === app.id && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-pink-500 rounded-r-full"></div>}
-                <app.icon className={`w-5 h-5 ${currentApp === app.id ? 'text-pink-400' : 'text-white/40'}`} />
+                {currentApp === app.id && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-pink-500 rounded-r-full shadow-[0_0_10px_rgba(236,72,153,0.5)]"></div>}
+                <app.icon className={`w-5 h-5 ${currentApp === app.id ? 'text-pink-400' : 'text-white/40 group-hover:text-white/80'}`} />
                 <span className={`text-[15px] ${currentApp === app.id ? 'font-bold' : 'font-medium'}`}>{app.name}</span>
               </button>
             ))}
